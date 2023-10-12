@@ -1,8 +1,8 @@
-const a = 1 + 2
-const b = a + 3
-const c = {
-  apple: a,
-  banana: b
-}
-const d = c.apple * 4
-console.log(d)
+let a = 1042
+let b = "apples and orages"
+const c = "pineapples"
+let d = [true, true, false]
+let e = {type: "ficus"}
+let f = [1, false]
+const g = [3]
+let h = null
