@@ -1,31 +1,91 @@
 "use strict";
-let reserve = (fromOrDestination, toOrDestination, destination) => {
-    if (fromOrDestination instanceof Date &&
-        toOrDestination instanceof Date &&
-        destination !== undefined) {
-        console.log("宿泊旅行を予約する");
+class BalletFlat {
+    constructor() {
+        this.purpose = "dancing";
     }
-    else if (fromOrDestination instanceof Date &&
-        typeof toOrDestination === "string") {
-        console.log("日帰り旅行を予約する");
+}
+class Boot {
+    constructor() {
+        this.purpose = "woodcutting";
     }
-    else if (typeof fromOrDestination === "string") {
-        console.log("すぐに出発する旅行を予約する");
+}
+class Sneaker {
+    constructor() {
+        this.purpose = "walking";
+    }
+}
+let Shoe = {
+    create(type) {
+        switch (type) {
+            case "balletFlat":
+                return new BalletFlat();
+            case "boot":
+                return new Boot();
+            case "sneaker":
+                return new Sneaker();
+        }
     }
 };
-function call(f, ...args) {
-    return f(...args);
+Shoe.create("balletFlat");
+Shoe.create("boot");
+Shoe.create("sneaker");
+class RequestBuilder {
+    constructor() {
+        this.data = null;
+        this.method = null;
+        this.url = null;
+    }
+    setMethod(method) {
+        return new RequestBuilderWithMethod().setMethod(method).setData(this.data);
+    }
+    setData(data) {
+        this.data = data;
+        return this;
+    }
 }
-function fill(length, value) {
-    return Array.from({ length }, () => value);
+class RequestBuilderWithMethod extends RequestBuilder {
+    setMethod(method) {
+        this.method = method;
+        return this;
+    }
+    setURL(url) {
+        return new RequestBuilderWithMethodAndURL()
+            .setMethod(this.method)
+            .setURL(url)
+            .setData(this.data);
+    }
 }
-call(fill, 10, "a");
-function is(a, ...b) {
-    return b.every(_ => _ === a);
+class RequestBuilderWithMethodAndURL extends RequestBuilderWithMethod {
+    setURL(url) {
+        this.url = url;
+        return this;
+    }
+    send() {
+        console.log("送信");
+    }
 }
-is("string", "otherstring");
-is(true, false);
-is(42, 42);
-is(10, "foo");
-is([1], [1, 2], [1, 2, 3]);
+new RequestBuilder()
+    .setMethod("get")
+    .setData({})
+    .setURL("foo.com")
+    .send();
+class RequestBuilder2 {
+    setData(data) {
+        return Object.assign(this, { data });
+    }
+    setMethod(method) {
+        return Object.assign(this, { method });
+    }
+    setURL(url) {
+        return Object.assign(this, { url });
+    }
+    build() {
+        return this;
+    }
+}
+new RequestBuilder2()
+    .setData({})
+    .setMethod("post")
+    .setURL("bar")
+    .build();
 //# sourceMappingURL=index.js.map

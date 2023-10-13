@@ -1,55 +1,116 @@
-type Reservation = unknown
-
-type Reserve = {
-  (from: Date, to: Date, destination: string): Reservation
-  (from: Date, destination: string): Reservation
-  (destination: string): Reservation
+type Shoe = {
+  purpose: string
 }
 
-let reserve: Reserve = (
-  fromOrDestination: Date | string,
-  toOrDestination?: Date | string,
-  destination?: string
-) => {
-  if (
-    fromOrDestination instanceof Date &&
-    toOrDestination instanceof Date &&
-    destination !== undefined
-  ) {
-    console.log("宿泊旅行を予約する")
-  } else if (
-    fromOrDestination instanceof Date &&
-    typeof toOrDestination === "string"
-  ) {
-    console.log("日帰り旅行を予約する")
-  } else if (typeof fromOrDestination === "string") {
-    console.log("すぐに出発する旅行を予約する")
+class BalletFlat implements Shoe {
+  purpose = "dancing"
+}
+
+class Boot implements Shoe {
+  purpose = "woodcutting"
+}
+
+class Sneaker implements Shoe {
+  purpose = "walking"
+}
+
+type ShoeCreator = {
+  create(type: "balletFlat"): BalletFlat
+  create(type: "boot"): Boot
+  create(type: "sneaker"): Sneaker
+}
+
+let Shoe: ShoeCreator = {
+  create(type: "balletFlat" | "boot" | "sneaker"): Shoe {
+    switch (type) {
+      case "balletFlat":
+        return new BalletFlat()
+      case "boot":
+        return new Boot()
+      case "sneaker":
+        return new Sneaker()
+    }
   }
 }
 
-function call<T extends [unknown, string, ...unknown[]], R>(
-  f: (...args: T) => R,
-  ...args: T
-): R {
-  return f(...args)
+Shoe.create("balletFlat")
+Shoe.create("boot")
+Shoe.create("sneaker")
+
+class RequestBuilder {
+  protected data: object | null = null
+  protected method: "get" | "post" | null = null
+  protected url: string | null = null
+
+  setMethod(method: "get" | "post"): RequestBuilderWithMethod {
+    return new RequestBuilderWithMethod().setMethod(method).setData(this.data)
+  }
+
+  setData(data: object | null): this {
+    this.data = data
+    return this
+  }
 }
 
-function fill(length: number, value: string): string[] {
-  return Array.from({length}, () => value)
+class RequestBuilderWithMethod extends RequestBuilder {
+  setMethod(method: "get" | "post" | null): this {
+    this.method = method
+    return this
+  }
+  setURL(url: string): RequestBuilderWithMethodAndURL {
+    return new RequestBuilderWithMethodAndURL()
+      .setMethod(this.method)
+      .setURL(url)
+      .setData(this.data)
+  }
 }
 
-call(fill, 10, "a")
-
-function is<T>(a: T, ...b: [T, ...T[]]): boolean {
-  return b.every(_ => _ === a)
+class RequestBuilderWithMethodAndURL extends RequestBuilderWithMethod {
+  setURL(url: string): this {
+    this.url = url
+    return this
+  }
+  send() {
+    console.log("送信")
+  }
 }
 
-is("string", "otherstring")
+new RequestBuilder()
+  .setMethod("get")
+  .setData({})
+  .setURL("foo.com")
+  .send()
 
-is(true, false)
+interface BuildableRequest {
+  data?: object
+  method:"get" | "post"
+  url: string
+}
 
-is(42, 42)
+class RequestBuilder2 {
+  data?: object
+  method?: "get" | "post"
+  url?: string
 
-is(10, "foo")
+  setData(data: object): this & Pick<BuildableRequest, "data"> {
+    return Object.assign(this, {data})
+  }
 
-is([1], [1, 2], [1, 2, 3])
+  setMethod(method: "get" | "post"):this & Pick<BuildableRequest, "method"> {
+    return Object.assign(this, {method})
+  }
+
+  setURL(url: string): this & Pick<BuildableRequest, "url"> {
+    return Object.assign(this, {url})
+  }
+
+  build(this: BuildableRequest) {
+    return this
+  }
+}
+
+new RequestBuilder2()
+  .setData({})
+  .setMethod("post")
+  .setURL("bar")
+  .build()
