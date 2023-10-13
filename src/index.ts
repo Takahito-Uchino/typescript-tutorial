@@ -1,116 +1,53 @@
-type Shoe = {
-  purpose: string
+let a: number
+a = 1 as 1
+
+let b: 1
+b = 2 as number
+
+let c: number | string
+c = "foo" as string
+
+let d: number
+d = true as boolean
+
+let e: (number | string)[]
+e = [1] as number[]
+
+let f: number[]
+f = [1] as (number | string)[]
+
+let g: {a: boolean}
+g = {a: true} as {a: true}
+
+let h: {a: {b: [number | string]}}
+h = {a: {b: ["c"]}} as {a: {b: [string]}}
+
+let i: (b: number) => string
+i = ((b: number) => "c") as (b: number) => string
+
+let k: (a: string) => string
+k = ((a: number | string) => "b") as (a: number | string) => string
+
+enum E {
+  X = "X"
 }
 
-class BalletFlat implements Shoe {
-  purpose = "dancing"
+enum F {
+  X = "X"
 }
 
-class Boot implements Shoe {
-  purpose = "woodcutting"
-}
+let l: F.X
+l = E.X as E.X
 
-class Sneaker implements Shoe {
-  purpose = "walking"
-}
-
-type ShoeCreator = {
-  create(type: "balletFlat"): BalletFlat
-  create(type: "boot"): Boot
-  create(type: "sneaker"): Sneaker
-}
-
-let Shoe: ShoeCreator = {
-  create(type: "balletFlat" | "boot" | "sneaker"): Shoe {
-    switch (type) {
-      case "balletFlat":
-        return new BalletFlat()
-      case "boot":
-        return new Boot()
-      case "sneaker":
-        return new Sneaker()
-    }
+const globalCache = {
+  get(key: string) {
+    return "user"
   }
 }
 
-Shoe.create("balletFlat")
-Shoe.create("boot")
-Shoe.create("sneaker")
+const userId = fetchUser()
+userId.toUpperCase()
 
-class RequestBuilder {
-  protected data: object | null = null
-  protected method: "get" | "post" | null = null
-  protected url: string | null = null
-
-  setMethod(method: "get" | "post"): RequestBuilderWithMethod {
-    return new RequestBuilderWithMethod().setMethod(method).setData(this.data)
-  }
-
-  setData(data: object | null): this {
-    this.data = data
-    return this
-  }
+function fetchUser() {
+  return globalCache.get("userId")
 }
-
-class RequestBuilderWithMethod extends RequestBuilder {
-  setMethod(method: "get" | "post" | null): this {
-    this.method = method
-    return this
-  }
-  setURL(url: string): RequestBuilderWithMethodAndURL {
-    return new RequestBuilderWithMethodAndURL()
-      .setMethod(this.method)
-      .setURL(url)
-      .setData(this.data)
-  }
-}
-
-class RequestBuilderWithMethodAndURL extends RequestBuilderWithMethod {
-  setURL(url: string): this {
-    this.url = url
-    return this
-  }
-  send() {
-    console.log("送信")
-  }
-}
-
-new RequestBuilder()
-  .setMethod("get")
-  .setData({})
-  .setURL("foo.com")
-  .send()
-
-interface BuildableRequest {
-  data?: object
-  method:"get" | "post"
-  url: string
-}
-
-class RequestBuilder2 {
-  data?: object
-  method?: "get" | "post"
-  url?: string
-
-  setData(data: object): this & Pick<BuildableRequest, "data"> {
-    return Object.assign(this, {data})
-  }
-
-  setMethod(method: "get" | "post"):this & Pick<BuildableRequest, "method"> {
-    return Object.assign(this, {method})
-  }
-
-  setURL(url: string): this & Pick<BuildableRequest, "url"> {
-    return Object.assign(this, {url})
-  }
-
-  build(this: BuildableRequest) {
-    return this
-  }
-}
-
-new RequestBuilder2()
-  .setData({})
-  .setMethod("post")
-  .setURL("bar")
-  .build()
