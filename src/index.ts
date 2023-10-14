@@ -1,53 +1,49 @@
-let a: number
-a = 1 as 1
+type UserID = unknown
 
-let b: 1
-b = 2 as number
-
-let c: number | string
-c = "foo" as string
-
-let d: number
-d = true as boolean
-
-let e: (number | string)[]
-e = [1] as number[]
-
-let f: number[]
-f = [1] as (number | string)[]
-
-let g: {a: boolean}
-g = {a: true} as {a: true}
-
-let h: {a: {b: [number | string]}}
-h = {a: {b: ["c"]}} as {a: {b: [string]}}
-
-let i: (b: number) => string
-i = ((b: number) => "c") as (b: number) => string
-
-let k: (a: string) => string
-k = ((a: number | string) => "b") as (a: number | string) => string
-
-enum E {
-  X = "X"
+declare class API {
+  getLoggedInUserID(): Option<UserID>
+  getFriendIDs(userID: UserID): Option<UserID[]>
+  getUserName(userID: UserID): Option<string>
 }
 
-enum F {
-  X = "X"
+interface Option<T> {
+  flatMap<U>(f: (value: T) => None): None
+  flatMap<U>(f: (value: T) => Option<U>): Option<U>
+  getOrElse(value: T): T
 }
 
-let l: F.X
-l = E.X as E.X
-
-const globalCache = {
-  get(key: string) {
-    return "user"
+class Some<T> implements Option<T> {
+  constructor(private value: T) {}
+  flatMap<U>(f: (value: T) => None): None
+  flatMap<U>(f: (value: T) => Some<U>): Some<U>
+  flatMap<U>(f: (value: T) => Option<U>): Option<U> {
+    return f(this.value)
+  }
+  getOrElse(): T {
+    return this.value
   }
 }
 
-const userId = fetchUser()
-userId.toUpperCase()
-
-function fetchUser() {
-  return globalCache.get("userId")
+class None implements Option<never> {
+  flatMap(): None {
+    return this
+  }
+  getOrElse<U>(value: U): U {
+    return value
+  }
 }
+
+function listOfOptionsToOptionOfList<T>(list: Option<T>[]): Option<T[]> {
+  const empty = {}
+  const result = list.map(_ => _.getOrElse(empty as T)).filter(_ => _ !== empty)
+  if (result.length) {
+    return new Some(result)
+  }
+  return new None()
+}
+
+let api = new API()
+let friendsUserNames = api
+  .getLoggedInUserID()
+  .flatMap(api.getFriendIDs)
+  .flatMap(_ => listOfOptionsToOptionOfList(_.map(api.getUserName)))
